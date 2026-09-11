@@ -1,0 +1,12 @@
+[
+  {
+    "username": "standard_user",
+    "description": "Normal account - happy path",
+    "canLogIn": true
+  },
+  {
+    "username": "locked_out_user",
+    "description": "Account is locked - login should be rejected",
+    "canLogIn": false
+  }
+]

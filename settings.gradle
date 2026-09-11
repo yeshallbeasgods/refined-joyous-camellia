@@ -1,0 +1,9 @@
+// settings.gradle runs BEFORE build.gradle and answers one question:
+// "what projects make up this build?" A build can be multiple modules
+// (multi-project build); this is a single-module build, so this file is
+// short - just naming the root project.
+//
+// rootProject.name controls the project's display name in Gradle output
+// and (by default) the name of the built artifact. Without this file,
+// Gradle would fall back to the containing directory's name.
+rootProject.name = 'refined-joyous-camellia'

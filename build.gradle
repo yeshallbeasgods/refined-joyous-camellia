@@ -1,0 +1,133 @@
+// build.gradle is a Groovy script Gradle executes to configure this project.
+// Unlike Maven's declarative pom.xml, this is real code - `plugins {}`,
+// `dependencies {}` etc. are Groovy method calls that take a closure
+// (a block) as their argument. That's why "test { useJUnitPlatform() }"
+// below is calling a `test` method/task and configuring it, not filling
+// in a fixed XML schema.
+
+plugins {
+    // The core Java plugin: adds the `compileJava`, `test`, `jar` tasks
+    // and the src/main, src/test source-set convention (same layout Maven
+    // uses - that part isn't build-tool-specific).
+    id 'java'
+
+    // Allure's Gradle plugin. `io.qameta.allure` is a shortcut that applies
+    // both its "adapter" (wires a JUnit Platform listener into the `test`
+    // task, and - unlike Maven - wires the AspectJ weaver javaagent for you
+    // automatically) and its "report" half (adds the allureReport /
+    // allureServe tasks used below).
+    id 'io.qameta.allure' version '4.2.0'
+}
+
+// group + version are the same concept as Maven's groupId/version - group
+// is your namespace, version marks this as a moving-target development
+// build (Gradle has no special meaning for "-SNAPSHOT" the way Maven does,
+// but it's the same convention by habit).
+group = 'com.portfolio'
+version = '1.0-SNAPSHOT'
+
+java {
+    // A "toolchain" tells Gradle which JDK to compile AND run tests with,
+    // independent of whichever JDK launched Gradle itself. Gradle finds a
+    // matching installed JDK automatically - including SDKMAN's - or
+    // downloads one if none matches.
+    //
+    // The ticket asks for sourceCompatibility/targetCompatibility = 25
+    // instead; that older pair still works, but only describes source/
+    // bytecode level, and silently uses whatever JDK is running Gradle to
+    // do the compiling. A toolchain is the modern replacement: it pins the
+    // actual JDK, which sourceCompatibility/targetCompatibility can't do.
+    // Worth flagging since it's a deviation from the literal ticket text -
+    // say the word if you'd rather have the literal properties.
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    // Where dependencies are downloaded from. mavenCentral() despite the
+    // name is just "the Maven Central repository" - a plain artifact host,
+    // nothing Maven-the-build-tool about it. Gradle and Maven both publish
+    // to and read from the same Central repository.
+    mavenCentral()
+}
+
+// Named version constants, same motivation as the ${...} properties in the
+// old pom.xml: one place to bump a version instead of hunting through the
+// dependencies block. `ext` = "extra project property" - Gradle's way of
+// defining your own named values.
+ext {
+    playwrightVersion = '1.62.0'
+    junitVersion = '5.14.4'
+    allureVersion = '2.35.5'
+    restAssuredVersion = '6.0.1'
+    assertjVersion = '3.27.7'
+    jacksonVersion = '2.22.2'
+    dotenvVersion = '3.2.0'
+}
+
+dependencies {
+    // testImplementation = Maven's <scope>test</scope>: on the classpath
+    // for compiling/running src/test only, never bundled into a shipped
+    // artifact. Every dependency here is testImplementation because this
+    // project has no src/main - it exists purely to run tests.
+
+    // platform(...) is Gradle's equivalent of importing a Maven BOM: it
+    // pins consistent versions across the whole JUnit artifact family
+    // (junit-jupiter-api, -engine, junit-platform-commons, ...) so nothing
+    // drifts out of sync, including versions pulled in transitively.
+    testImplementation platform("org.junit:junit-bom:${junitVersion}")
+    // No version here - it comes from the platform(...) BOM above.
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testImplementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+    testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    testImplementation "io.github.cdimascio:dotenv-java:${dotenvVersion}"
+
+    // Deliberately NOT listing io.qameta.allure:allure-junit5 here (what
+    // the ticket names) even though it's the literal dependency the plugin
+    // adds under the hood. Two reasons: (1) that artifact's POM now
+    // redirects to allure-jupiter - same project, renamed; (2) the `allure`
+    // block below (`adapter { frameworks { junit5 } }`) makes the plugin
+    // add the correctly-named/versioned adapter dependency itself. Listing
+    // it manually here too would just be a second place it could drift out
+    // of sync with allureVersion.
+}
+
+allure {
+    // Pins the Allure command-line renderer version used by allureReport /
+    // allureServe, so the generated HTML report is consistent across
+    // machines - the Gradle-plugin equivalent of <reportVersion> in the
+    // old Maven allure-maven config.
+    version = allureVersion
+    adapter {
+        frameworks {
+            // Registers the JUnit 5 (Jupiter) result adapter - the piece
+            // that actually writes target/../allure-results JSON files
+            // as tests run - and wires the AspectJ javaagent into the
+            // `test` task so @Step / @Attachment annotations work.
+            junit5
+        }
+    }
+}
+
+// `test` here is configuring the Test task the `java` plugin already
+// created - not declaring a new one.
+test {
+    // Tells Surefire's Gradle equivalent to discover and run tests via the
+    // JUnit Platform (what JUnit 5 runs on) instead of the old JUnit 4
+    // runner. Required for any JUnit 5 project; this is the one line the
+    // ticket calls out explicitly.
+    useJUnitPlatform()
+
+    // Prints each test's name and outcome to the console as it runs, and
+    // the full stack trace on failure - genuinely useful while you're
+    // still learning what a passing/failing run looks like. Safe to trim
+    // later once Allure's HTML report is your primary view.
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+}
