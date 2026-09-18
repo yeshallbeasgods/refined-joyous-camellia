@@ -57,7 +57,7 @@ repositories {
 // dependencies block. `ext` = "extra project property" - Gradle's way of
 // defining your own named values.
 ext {
-    playwrightVersion = '1.62.0'
+    playwrightVersion = '1.63.0'
     junitVersion = '5.14.4'
     allureVersion = '2.35.5'
     restAssuredVersion = '6.0.1'
