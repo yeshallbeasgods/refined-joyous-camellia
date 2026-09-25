@@ -62,7 +62,7 @@ ext {
     allureVersion = '2.35.5'
     restAssuredVersion = '6.0.1'
     assertjVersion = '3.27.7'
-    jacksonVersion = '2.22.2'
+    jacksonVersion = '2.22.3'
     dotenvVersion = '3.2.0'
 }
 
