@@ -18,7 +18,7 @@ repositories {
 
 ext {
     playwrightVersion = '1.62.0'
-    junitVersion = '5.14.4'
+    junitVersion = '6.1.3'
     allureVersion = '2.35.5'       // adapter library (writes allure-results)
     allureReportVersion = '2.46.1' // allure-commandline (renders the HTML report) - versions separately from the adapter above
     restAssuredVersion = '6.0.1'
