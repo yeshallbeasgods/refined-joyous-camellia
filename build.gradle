@@ -23,7 +23,7 @@ ext {
     allureReportVersion = '2.46.1' // allure-commandline (renders the HTML report) - versions separately from the adapter above
     restAssuredVersion = '6.0.1'
     assertjVersion = '3.27.7'
-    jacksonVersion = '2.22.2'
+    jacksonVersion = '2.22.4'
     dotenvVersion = '3.2.0'
 }
 
