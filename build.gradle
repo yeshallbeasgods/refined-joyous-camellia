@@ -21,7 +21,7 @@ ext {
     junitVersion = '5.14.4'
     allureVersion = '2.35.5'       // adapter library (writes allure-results)
     allureReportVersion = '2.46.1' // allure-commandline (renders the HTML report) - versions separately from the adapter above
-    restAssuredVersion = '6.0.1'
+    restAssuredVersion = '6.3.0'
     assertjVersion = '3.27.7'
     jacksonVersion = '2.22.2'
     dotenvVersion = '3.2.0'
